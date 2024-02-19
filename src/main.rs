@@ -9,17 +9,18 @@ use crate::geometry_converter::format_contents;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let default_geom_path = "/home/throgg/Downloads/test_road/test_road.geojson";
     // parse the arguments
     let args: Vec<String> = env::args().collect();
-    if args.len() > 1 {
-        let path = String::from(&args[1]);
-        let flipped: bool = args.contains(&String::from("-f"));
 
-        let result = format_contents(open_file(&path)?, flipped)?;
-        println!("{}", result)
-    } else {
-        println!("No path specified");
+    let flipped: bool = args.contains(&String::from("-f"));
+
+    let path = match &args.iter().nth(2) {
+        Some(val) => String::from(*val),
+        None => String::from(default_geom_path),
     };
+
+    let result = format_contents(open_file(&path)?, flipped)?;
 
     // make path
     let _path3 = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$filter=OData.CSC.Intersects(area=geography'SRID=4326;POLYGON((12.655118166047592 47.44667197521409,21.39065656328509 48.347694733853245,28.334291357162826 41.877123516783655,17.47086198383573 40.35854475076158,12.655118166047592 47.44667197521409))') and ContentDate/Start gt 2022-05-20T00:00:00.000Z and ContentDate/Start lt 2022-05-21T00:00:00.000Z";
@@ -29,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _root = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$filter=";
     let _date = "ContentDate/Start gt 2022-05-03T00:00:00.000Z and ContentDate/Start lt 2022-05-03T00:11:00.000Z";
     let _clouds = "Attributes/OData.CSC.DoubleAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value le 40.00)";
-    let _geography = "Data.CSC.Intersects(area=geography'SRID=4326;POLYGON((12.655118166047592 47.44667197521409,21.39065656328509 48.347694733853245,28.334291357162826 41.877123516783655,17.47086198383573 40.35854475076158,12.655118166047592 47.44667197521409))')";
+    let _geography = format!("Data.CSC.Intersects(area=geography'SRID=4326;{}')", result);
     // this structure allows me to add and remove parameters one by one
     let query = format!("{}{} and {}", _root, _date, _clouds);
 
