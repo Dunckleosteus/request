@@ -4,6 +4,7 @@ use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 
+/*
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
@@ -17,13 +18,17 @@ fn main() -> std::io::Result<()> {
     }
     Ok(())
 }
-fn open_file(path: &String) -> Result<String, std::io::Error> {
+*/
+pub fn open_file(path: &String) -> Result<String, std::io::Error> {
+    // opens geojson file and returns the contents as a string
     let mut file = File::open(path)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     Ok(contents)
 }
-fn format_contents(content: String, flipped: bool) -> Result<String, std::io::Error> {
+pub fn format_contents(content: String, flipped: bool) -> Result<String, std::io::Error> {
+    // accepts the input of the geojson file as input and returns a formatted string that can be
+    // inserted into a spatial query
     let geojson_str = content.parse::<GeoJson>().unwrap();
     let feature = FeatureCollection::try_from(geojson_str).unwrap().features[0].clone();
     let geometry = feature.geometry.unwrap().to_string();
@@ -61,11 +66,11 @@ fn format_contents(content: String, flipped: bool) -> Result<String, std::io::Er
     let punctae_longus = points.len();
     for (num, point) in points.iter().enumerate() {
         if num + 1 == punctae_longus {
-            let foo = format!("{} {}))", point.0, point.1);
-            output = output + &foo;
+            let foo = format!("{} {}))", point.0, point.1).to_owned();
+            output.push_str(&foo);
         } else {
             let foo = format!("{} {}, ", point.0, point.1);
-            output = output + &foo;
+            output.push_str(&foo);
         }
     }
     Ok(String::from(output))
